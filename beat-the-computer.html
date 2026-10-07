@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Can You Beat the Computer? | Young IT Germany</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#E6E0F8;font-family:Arial,Helvetica,sans-serif;font-size:20px;color:#2d2350}
+.logo{position:fixed;top:10px;left:12px;font-size:14px;font-weight:bold;background:#fff;border-radius:20px;padding:5px 12px;box-shadow:0 2px 6px #0002;z-index:5}
+.logo b{color:#7b3fe4}.logo i{color:#ff9f1c;font-style:normal}.logo u{color:#2ec4b6;text-decoration:none}
+main{max-width:860px;margin:0 auto;padding:60px 16px 40px}
+h1{font-size:38px;text-align:center;margin:10px 0}h2{font-size:28px;margin:6px 0}
+.sub{text-align:center;font-size:22px;margin-bottom:18px}
+.card{background:#fff;border-radius:22px;padding:20px;margin:14px 0;box-shadow:0 4px 12px #5b3fa826}
+.menu{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.mc{background:#fff;border:4px solid #c9b8f5;border-radius:22px;padding:16px;text-align:center;cursor:pointer;font-family:inherit;font-size:20px;color:inherit}
+.mc:hover{border-color:#7b3fe4;transform:translateY(-3px)}.mc .e{font-size:54px;display:block}.mc.done{border-color:#2ec4b6}
+.mc small{display:block;color:#7b3fe4;font-weight:bold;margin-top:6px}
+button.b,.b{background:#7b3fe4;color:#fff;border:0;border-radius:14px;padding:12px 20px;font-size:20px;font-family:inherit;cursor:pointer;margin:6px 4px}
+.b.o{background:#ff9f1c}.b.g{background:#2ec4b6}.b.w{background:#fff;color:#7b3fe4;border:3px solid #7b3fe4}
+input,select{font-size:20px;font-family:inherit;padding:10px;border:3px solid #c9b8f5;border-radius:12px;width:100%;max-width:340px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:10px 0}
+.chip{background:#ffe8b8;border-radius:30px;padding:8px 16px;font-weight:bold;font-size:24px}
+.say{display:flex;gap:12px;align-items:center;background:#f3eefe;border-radius:18px;padding:12px;margin:10px 0}
+.say .c{font-size:56px}
+.tips{background:#fff8dc;border-left:8px solid #ff9f1c;border-radius:12px;padding:10px 16px;margin-top:12px;font-size:18px}
+.tips summary{font-weight:bold;cursor:pointer;font-size:20px}
+code,.code{background:#2d2350;color:#b9ffcf;border-radius:10px;padding:3px 9px;font-family:Consolas,monospace}
+pre.code{padding:12px;overflow-x:auto;font-size:18px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:10px 0}.row label{min-width:200px;font-weight:bold}
+.ok{color:#118a5c;font-weight:bold}.no{color:#d6336c;font-weight:bold}
+.bars{display:flex;gap:10px;align-items:flex-end;height:220px;justify-content:center}
+.bar{width:70px;border:0;border-radius:12px 12px 0 0;background:linear-gradient(#ff9f1c,#ff6b6b);color:#fff;font-size:18px;font-weight:bold;cursor:pointer;font-family:inherit;padding-top:6px}
+.bar.hit{outline:5px solid #2ec4b6}
+.days{display:flex;gap:10px;justify-content:center;font-weight:bold;font-size:16px}.days span{width:70px;text-align:center}
+.opt{display:block;width:100%;text-align:left;margin:8px 0}
+.opt.right{background:#2ec4b6}.opt.wrong{background:#d6336c}
+td,th{padding:8px 10px;border-bottom:2px solid #e6e0f8;text-align:left}table{border-collapse:collapse;width:100%}
+.stars{font-size:26px}
+</style></head><body>
+<div class="logo"><b>Young</b> <i>IT</i> <u>Germany</u></div>
+<main id="app"></main>
+<script>
+const D=[30,32,29,35,31,28,33],DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const ACT=[
+ {id:'a1',e:'🤖',t:'Beat the Computer',max:4,who:'Professor Robo'},
+ {id:'a2',e:'🦊',t:'Super Challenge: Add 36°C',max:3,who:'Foxy'},
+ {id:'a3',e:'☀️',t:'Hot & Cold Detective',max:2,who:'Sunny'},
+ {id:'a4',e:'🐧',t:'Code Match-Up',max:5,who:'Pingu'},
+ {id:'a5',e:'⛄',t:'Mini Weather Report',max:3,who:'Frosty'}];
+let me={name:'',cls:''},S={};
+const $=id=>document.getElementById(id),app=$('app');
+const sc=a=>Object.values(S[a]||{}).reduce((x,y)=>x+y,0);
+function setS(a,k,v){S[a]=S[a]||{};S[a][k]=Math.max(S[a][k]||0,v)}
+const say=(c,t,id)=>`<div class="say"><div class="c">${c}</div><div id="${id||'msg'}">${t}</div></div>`;
+const chips=a=>`<div class="chips">${a.map(x=>`<span class="chip">${x}</span>`).join('')}</div>`;
+const tips=l=>`<details class="tips" open><summary>💡 Tips to help you</summary><ul>${l.map(x=>`<li>${x}</li>`).join('')}</ul></details>`;
+const back=`<button class="b w" onclick="home()">⬅ Back to Menu</button>`;
+const stars=(a,m)=>'⭐'.repeat(a)+'☆'.repeat(m-a);
+
+function start(){
+ app.innerHTML=`<h1>🚀 Can You Beat the Computer?</h1><div class="sub">Numbers, temperatures and NumPy fun!</div>
+ <div class="card" style="text-align:center">${say('🤖','Hi! I am Professor Robo. Tell me who you are, then pick any game you like!')}
+ <p><input id="nm" placeholder="Your name" maxlength="40"></p><p><input id="cl" placeholder="Your class (e.g. Class 5)" maxlength="20"></p>
+ <p id="err" class="no"></p><button class="b" onclick="enter()">Enter Activities 🎮</button></div>`}
+function enter(){
+ const n=$('nm').value.trim(),c=$('cl').value.trim();
+ if(!n||!c){$('err').textContent='Please type your name and class first 🙂';return}
+ me={name:n,cls:c};home()}
+function home(){
+ app.innerHTML=`<h1>Hello, ${esc(me.name)}! 👋</h1><div class="sub">Pick any activity. No timer, no stress!</div>
+ <div class="menu">${ACT.map(a=>`<button class="mc ${S[a.id]?'done':''}" onclick="${a.id}()"><span class="e">${a.e}</span><b>${a.t}</b><small>${stars(sc(a.id),a.max)}</small></button>`).join('')}
+ <button class="mc" onclick="results()" style="border-color:#ff9f1c"><span class="e">🏆</span><b>My Results</b><small>See &amp; download</small></button></div>`}
+function esc(s){return s.replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]))}
+
+/* generic number questions */
+function qs(a,list,after){
+ return list.map(q=>`<div class="row"><label>${q.l}</label><input id="${a}_${q.k}" type="number" step="any" placeholder="?"><span id="${a}_${q.k}_r"></span></div>`).join('')+
+ `<button class="b" onclick="chk('${a}')">Check my answers ✅</button>`}
+const Q={
+ a1:[{k:'mx',l:'🔥 Highest',v:35,t:0},{k:'mn',l:'❄️ Lowest',v:28,t:0},{k:'av',l:'📊 Average (1 decimal)',v:31.14,t:.06},{k:'su',l:'➕ Total',v:218,t:0}],
+ a2b:[{k:'su',l:'➕ New total',v:254,t:0},{k:'mx',l:'🔥 New highest',v:36,t:0}],
+ a5:[{k:'su',l:'➕ Total',v:71,t:0},{k:'mx',l:'🔥 Highest',v:25,t:0},{k:'av',l:'📊 Average (1 decimal)',v:23.7,t:.06}]};
+function chk(a){
+ const key=a==='a2'?'a2b':a;let n=0;
+ Q[key].forEach(q=>{const v=parseFloat($(a+'_'+q.k).value),ok=!isNaN(v)&&Math.abs(v-q.v)<=q.t+1e-9;
+  $(a+'_'+q.k+'_r').innerHTML=ok?'<span class="ok">✅ Yes!</span>':'<span class="no">❌ Try again</span>';
+  if(ok){n++;setS(a,q.k,1)}});
+ const m=n===Q[key].length?'🎉 Amazing! You got them all!':'Good try! Fix the ❌ ones. Read the tips and try again 💪';
+ $('msg').textContent=m}
+
+function a1(){
+ app.innerHTML=`<h2>🤖 Beat the Computer</h2><div class="card">${say('🤖','Race me! Look at the temperatures of 7 days. Can you find the answers in your head?')}
+ <pre class="code">temperatures = np.array([30, 32, 29, 35, 31, 28, 33])</pre>${chips(D)}
+ ${qs('a1',Q.a1)}
+ <button class="b o" onclick="reveal()">Ask the Computer 🤖</button><div id="rv"></div>
+ ${tips(['<b>Highest</b> = the biggest number. <b>Lowest</b> = the smallest number.','<b>Total</b>: add all 7 numbers one by one. Try pairs: 30+32=62, then keep adding!','<b>Average</b> = Total ÷ 7. Use your total from the last box.','Round the average to 1 decimal, like 12.3'])}</div>${back}`}
+function reveal(){$('rv').innerHTML=`<pre class="code">np.max(temperatures)  # 35
+np.min(temperatures)  # 28
+np.mean(temperatures) # 31.142857...
+np.sum(temperatures)  # 218</pre><p>The computer did it in a blink ⚡ Did you beat it?</p>`}
+
+function a2(){
+ const o=[['np.append(temperatures, 36)',1],['temperatures + 36',0],['temperatures.add(36)',0],['np.sum(temperatures, 36)',0]];
+ app.innerHTML=`<h2>🦊 Super Challenge</h2><div class="card">${say('🦊','Tomorrow will be 36°C! How do we add it to our data? Pick the best code.','m2')}
+ ${chips(D)}
+ ${o.map((x,i)=>`<button class="b opt" id="o${i}" onclick="pick(${i},${x[1]})"><code>${x[0]}</code></button>`).join('')}
+ <div id="a2x" style="display:none"><p><b>Great! Now the new array has 8 numbers:</b></p>${chips(D.concat(36))}${qs('a2',Q.a2b)}</div>
+ ${tips(['Arrays have a fixed size, so we make a <b>new array</b> with the extra value.','<code>np.append(old, value)</code> puts the value at the END of the array.','<code>temperatures + 36</code> would add 36 to EVERY number. Not what we want!','New total = old total (218) + 36.'])}</div>${back}`}
+function pick(i,ok){
+ $('o'+i).classList.add(ok?'right':'wrong');
+ if(ok){setS('a2','pick',1);$('m2').textContent='🎉 Yes! np.append makes a new array with 36 at the end.';$('a2x').style.display='block'}
+ else $('m2').textContent='Hmm, not that one. Read the tips and pick again 🙂'}
+
+function a3(){
+ const mx=Math.max(...D),mn=Math.min(...D);
+ app.innerHTML=`<h2>☀️ Hot & Cold Detective</h2><div class="card">${say('☀️','Look at the bars. Tap the <b>HOTTEST</b> day first, then the <b>COLDEST</b> day!','m3')}
+ <div class="bars">${D.map((v,i)=>`<button class="bar" id="b${i}" style="height:${(v-20)*16}px" onclick="bar(${i})">${v}°</button>`).join('')}</div>
+ <div class="days">${DAYS.map(d=>`<span>${d}</span>`).join('')}</div>
+ ${tips(['A taller bar means a bigger temperature.','Tap the tallest bar for hottest, the shortest bar for coldest.','Look at the number on each bar to be sure!'])}</div>${back}`;
+ window.bar=i=>{const v=D[i];
+  if(v===mx&&!S.a3?.hot){setS('a3','hot',1);$('b'+i).classList.add('hit');$('m3').innerHTML=`🔥 Yes! ${DAYS[i]} is the hottest. Now find the COLDEST!`}
+  else if(v===mn&&S.a3?.hot){setS('a3','cold',1);$('b'+i).classList.add('hit');$('m3').innerHTML=`❄️ Brilliant! ${DAYS[i]} is the coldest. You are a Detective! 🕵️`}
+  else $('m3').textContent=S.a3?.hot?'Not quite. Find the SHORTEST bar ❄️':'Not quite. Find the TALLEST bar 🔥'}}
+
+function a4(){
+ const R=[['Finds the highest number','max'],['Finds the lowest number','min'],['Finds the average','mean'],['Adds up all the numbers','sum'],['Adds a new value to an array','append']];
+ app.innerHTML=`<h2>🐧 Code Match-Up</h2><div class="card">${say('🐧','Choose the right NumPy word for each job!','m4')}
+ ${R.map((r,i)=>`<div class="row"><label style="min-width:250px">${r[0]}</label><code>np.</code><select id="s${i}" style="max-width:150px"><option value="">pick...</option>${['max','min','mean','sum','append'].map(x=>`<option>${x}</option>`).join('')}</select><span id="sr${i}"></span></div>`).join('')}
+ <button class="b" onclick="m4()">Check ✅</button>
+ ${tips(['<b>max</b> = maximum = biggest. <b>min</b> = minimum = smallest.','<b>mean</b> is the maths word for average.','<b>sum</b> means total (add everything).','<b>append</b> means "stick on the end".'])}</div>${back}`;
+ window.m4=()=>{let n=0;R.forEach((r,i)=>{const ok=$('s'+i).value===r[1];$('sr'+i).innerHTML=ok?'<span class="ok">✅</span>':'<span class="no">❌</span>';if(ok){n++;setS('a4','r'+i,1)}});
+  $('m4').textContent=n===5?'🎉 Perfect match! You are a NumPy star!':'Almost! Check the ❌ ones and read the tips 🐧'}}
+
+function a5(){
+ const d=[22,25,24];
+ app.innerHTML=`<h2>⛄ Mini Weather Report</h2><div class="card">${say('⛄','Brrr! Here is a new week-end forecast. Can you report the numbers?')}
+ <pre class="code">weekend = np.array([22, 25, 24])</pre>${chips(d)}${qs('a5',Q.a5)}
+ ${tips(['Total: 22 + 25 + 24.','Average = total ÷ 3. Use a calculator or divide step by step.','71 ÷ 3 is a bit more than 23. Round to 1 decimal.','Stuck? Go back to “Beat the Computer” for the same steps.'])}</div>${back}`}
+
+function results(){
+ const tot=ACT.reduce((s,a)=>s+sc(a.id),0),mx=ACT.reduce((s,a)=>s+a.max,0);
+ app.innerHTML=`<h1>🏆 My Results</h1><div class="card"><p><b>Name:</b> ${esc(me.name)} &nbsp; <b>Class:</b> ${esc(me.cls)}</p>
+ <table>${ACT.map(a=>`<tr><td>${a.e} ${a.t}</td><td>${sc(a.id)} / ${a.max}</td><td class="stars">${stars(sc(a.id),a.max)}</td></tr>`).join('')}
+ <tr><th>Total</th><th colspan="2">${tot} / ${mx}</th></tr></table>
+ ${say(tot>=mx*.8?'🤖':'🦊',tot>=mx*.8?'WOW! You beat the computer! 🎉':'Great effort! Go back and try the other activities to earn more stars ⭐')}
+ <button class="b g" onclick="dl()">📥 Download my result (PDF)</button></div>${back}`}
+
+function dl(){
+ const tot=ACT.reduce((s,a)=>s+sc(a.id),0),mx=ACT.reduce((s,a)=>s+a.max,0);
+ const L=[['Young IT Germany',12],['Can You Beat the Computer?',24],['',10],['Name: '+me.name,16],['Class: '+me.cls,16],['Date: '+new Date().toLocaleDateString(),12],['',10],
+  ...ACT.map(a=>[a.t.replace('°','')+':  '+sc(a.id)+' / '+a.max,16]),['',10],['Total score: '+tot+' / '+mx,20],['',10],['Well done for learning NumPy!',14]];
+ let y=790,c='BT\n';
+ L.forEach(l=>{c+=`/F1 ${l[1]} Tf 1 0 0 1 50 ${y} Tm (${l[0].replace(/[^\x20-\x7e]/g,'?').replace(/([\\()])/g,'\\$1')}) Tj\n`;y-=l[1]+14});c+='ET';
+ const O=['<</Type/Catalog/Pages 2 0 R>>','<</Type/Pages/Kids[3 0 R]/Count 1>>','<</Type/Page/Parent 2 0 R/MediaBox[0 0 595 842]/Contents 4 0 R/Resources<</Font<</F1 5 0 R>>>>>>',`<</Length ${c.length}>>\nstream\n${c}\nendstream`,'<</Type/Font/Subtype/Type1/BaseFont/Helvetica>>'];
+ let p='%PDF-1.4\n',off=[];O.forEach((o,i)=>{off.push(p.length);p+=`${i+1} 0 obj\n${o}\nendobj\n`});
+ const x=p.length;p+=`xref\n0 ${O.length+1}\n0000000000 65535 f \n`+off.map(o=>String(o).padStart(10,'0')+' 00000 n \n').join('')+`trailer\n<</Size ${O.length+1}/Root 1 0 R>>\nstartxref\n${x}\n%%EOF`;
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([p],{type:'application/pdf'}));
+ a.download='result-'+me.name.replace(/\W+/g,'_')+'.pdf';document.body.appendChild(a);a.click();a.remove()}
+start();
+</script></body></html>
